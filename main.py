@@ -3,6 +3,10 @@ from sort_documents import sort_documents
 from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
+import drive_downloader  
+
+
+drive_downloader.download_files()
 
 st.title(" Cloud Document Analyzer")
 
@@ -22,7 +26,7 @@ elif option == "Search Documents":
     if keyword:
         results = search_documents(keyword)
         for doc_name, lines in results.items():
-            st.markdown(f"** {doc_name}**")
+            st.markdown(f"**📄 {doc_name}**")
             for line in lines:
                 st.write(f"- {line}")
 
@@ -33,7 +37,7 @@ elif option == "Classify Documents":
         st.write(f"{file} → {category}")
 
 elif option == "Generate Statistics":
-    st.subheader(" Statistics")
+    st.subheader("Statistics")
     stats = generate_stats_report()
     for line in stats:
         st.write(line)
