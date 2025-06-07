@@ -8,12 +8,12 @@ from stats_report import generate_stats_report
 os.makedirs("documents", exist_ok=True)
 
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
-st.title(" Cloud Document Analyzer")
-st.markdown("Use the options below to analyze your document collection stored in the cloud.")
 
-# User selects function
+st.title(" Cloud Document Analyzer")
+st.info("Choose a function and click the button to run it.")
+
 option = st.selectbox(
-    "Choose a function:",
+    " Choose a function:",
     ("Select...", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
@@ -42,7 +42,7 @@ elif option == "Classify Documents":
     if st.button("Run Classification"):
         result = classify_documents()
         for file, category in result.items():
-            st.write(f" {file} → {category}")
+            st.write(f"{file} → {category}")
 
 elif option == "Generate Statistics":
     st.subheader(" Project Statistics")
