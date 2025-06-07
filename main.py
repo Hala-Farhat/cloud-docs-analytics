@@ -7,12 +7,14 @@ from stats_report import generate_stats_report
 
 os.makedirs("documents", exist_ok=True)
 
+st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 st.title(" Cloud Document Analyzer")
-st.info(" App is running! Choose a task from the menu below.")
+st.markdown("Use the options below to analyze your document collection stored in the cloud.")
 
+# User selects function
 option = st.selectbox(
-    " Choose a function:",
-    ("Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
+    "Choose a function:",
+    ("Select...", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
 if option == "Sort Documents":
@@ -20,17 +22,20 @@ if option == "Sort Documents":
     if st.button("Run Sorting"):
         result = sort_documents()
         for title, fname in result:
-            st.write(f"{fname} → {title}")
+            st.write(f" {fname} → {title}")
 
 elif option == "Search Documents":
     st.subheader(" Search Inside Documents")
     keyword = st.text_input("Enter keyword:")
     if keyword and st.button("Search Now"):
         results = search_documents(keyword)
-        for doc_name, lines in results.items():
-            st.markdown(f"** {doc_name}**")
-            for line in lines:
-                st.write(f"- {line}")
+        if not results:
+            st.warning("No results found.")
+        else:
+            for doc_name, lines in results.items():
+                st.markdown(f"** {doc_name}**")
+                for line in lines:
+                    st.write(f"- {line}")
 
 elif option == "Classify Documents":
     st.subheader(" Document Classification")
