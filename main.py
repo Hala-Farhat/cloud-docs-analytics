@@ -10,11 +10,11 @@ os.makedirs("documents", exist_ok=True)
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 
 st.title(" Cloud Document Analyzer")
-st.info("Choose a function and click the button to run it.")
+st.info("Select a function and click the button to run it.")
 
 option = st.selectbox(
-    " Choose a function:",
-    ("Select...", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
+    "Choose a function to perform:",
+    ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
 if option == "Sort Documents":
@@ -25,9 +25,9 @@ if option == "Sort Documents":
             st.write(f" {fname} → {title}")
 
 elif option == "Search Documents":
-    st.subheader(" Search Inside Documents")
-    keyword = st.text_input("Enter keyword:")
-    if keyword and st.button("Search Now"):
+    st.subheader(" Search Documents")
+    keyword = st.text_input("Enter keyword to search:")
+    if keyword and st.button("Search"):
         results = search_documents(keyword)
         if not results:
             st.warning("No results found.")
