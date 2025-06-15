@@ -1,5 +1,6 @@
 import os
 import base64
+import urllib.parse
 import streamlit as st
 from sort_documents import sort_documents
 from search_documents import search_documents
@@ -19,14 +20,18 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# ✅ عرض ملفات PDF داخل iframe
+# ✅ عرض PDF داخل iframe
 def show_pdf_in_streamlit(file_path):
-    with open(file_path, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
-    st.markdown(pdf_display, unsafe_allow_html=True)
+    try:
+        with open(file_path, "rb") as f:
+            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+        encoded_path = urllib.parse.quote(file_path)
+        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
+        st.markdown(pdf_display, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"⚠️ Error displaying PDF: {e}")
 
-# ✅ تحميل ملف Word المعدل
+# ✅ تحميل ملف DOCX بعد التمييز
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -58,14 +63,14 @@ elif option == "Search Documents":
                     highlighted = line.replace(keyword, f"<mark>{keyword}</mark>")
                     st.markdown(f"• {highlighted}", unsafe_allow_html=True)
 
-                # ⬇️ PDF عرض داخل الصفحة
-                if doc_name.endswith(".pdf"):
+                # عرض PDF
+                if doc_name.lower().endswith(".pdf"):
                     full_path = os.path.join(DOCS_FOLDER, doc_name)
                     if st.button(f"👀 View {doc_name}", key=f"view_{doc_name}"):
                         show_pdf_in_streamlit(full_path)
 
-                # ⬇️ Word تحميل الملف المعدل
-                if doc_name.endswith(".docx"):
+                # تحميل ملف DOCX
+                if doc_name.lower().endswith(".docx"):
                     full_path = os.path.join(DOCS_FOLDER, doc_name)
                     download_docx(full_path)
 
