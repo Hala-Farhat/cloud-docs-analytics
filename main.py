@@ -63,16 +63,15 @@ elif option == "Search Documents":
                     highlighted = line.replace(keyword, f"<mark>{keyword}</mark>")
                     st.markdown(f"• {highlighted}", unsafe_allow_html=True)
 
-                # عرض PDF
+                full_path = os.path.join(DOCS_FOLDER, doc_name)
+
                 if doc_name.lower().endswith(".pdf"):
-                    full_path = os.path.join(DOCS_FOLDER, doc_name)
-                    if st.button(f"👀 View {doc_name}", key=f"view_{doc_name}"):
+                    with st.expander(f"👀 Preview {doc_name}"):
                         show_pdf_in_streamlit(full_path)
 
-                # تحميل ملف DOCX
                 if doc_name.lower().endswith(".docx"):
-                    full_path = os.path.join(DOCS_FOLDER, doc_name)
                     download_docx(full_path)
+
 
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
