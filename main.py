@@ -1,54 +1,49 @@
 import os
+import base64
 import streamlit as st
 from sort_documents import sort_documents
 from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
 
-# إنشاء مجلد لحفظ الملفات إذا لم يكن موجود
-os.makedirs("documents", exist_ok=True)
+DOCS_FOLDER = "documents"
+os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# إعداد الواجهة
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
-st.success("✅ Application is running successfully!")
 st.title("📂 Cloud Document Analyzer")
-st.info("Upload documents, then select a function to perform.")
+st.success("✅ Application is running successfully!")
+st.info("Select a function from below and click the button to run it.")
 
-# ✅ رفع ملفات جديدة
-st.subheader("📤 Upload New Documents")
-uploaded_files = st.file_uploader(
-    "Upload PDF or DOCX files",
-    type=["pdf", "docx"],
-    accept_multiple_files=True
-)
-if uploaded_files:
-    for uploaded_file in uploaded_files:
-        with open(os.path.join("documents", uploaded_file.name), "wb") as f:
-            f.write(uploaded_file.getbuffer())
-    st.success(f"Uploaded {len(uploaded_files)} file(s) successfully.")
-
-# ✅ القائمة المنسدلة لاختيار الوظيفة
 option = st.selectbox(
     "Choose a function to perform:",
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# ⚠️ تنبيه في حال لم يختر المستخدم شيء
-if option == "-- Select --":
-    st.warning("Please select a function from the dropdown above to begin.")
+# ✅ عرض ملفات PDF داخل iframe
+def show_pdf_in_streamlit(file_path):
+    with open(file_path, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
+    st.markdown(pdf_display, unsafe_allow_html=True)
 
-# ✅ الفرز
-elif option == "Sort Documents":
+# ✅ تحميل ملف Word المعدل
+def download_docx(file_path):
+    with open(file_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    st.download_button(
+        label="⬇️ Download Edited Word File",
+        data=base64.b64decode(b64),
+        file_name=os.path.basename(file_path),
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+if option == "Sort Documents":
     st.subheader("📑 Sorted Document Titles")
     if st.button("Run Sorting"):
         result = sort_documents()
-        if result:
-            for title, fname in result:
-                st.write(f"📄 **{fname}** → {title}")
-        else:
-            st.info("No documents found.")
+        for title, fname in result:
+            st.write(f"📄 **{fname}** → {title}")
 
-# ✅ البحث
 elif option == "Search Documents":
     st.subheader("🔍 Search Documents")
     keyword = st.text_input("Enter keyword to search:")
@@ -60,20 +55,27 @@ elif option == "Search Documents":
             for doc_name, lines in results.items():
                 st.markdown(f"### 📄 {doc_name}")
                 for line in lines:
-                    st.write(f"• {line}")
+                    highlighted = line.replace(keyword, f"<mark>{keyword}</mark>")
+                    st.markdown(f"• {highlighted}", unsafe_allow_html=True)
 
-# ✅ التصنيف
+                # ⬇️ PDF عرض داخل الصفحة
+                if doc_name.endswith(".pdf"):
+                    full_path = os.path.join(DOCS_FOLDER, doc_name)
+                    if st.button(f"👀 View {doc_name}", key=f"view_{doc_name}"):
+                        show_pdf_in_streamlit(full_path)
+
+                # ⬇️ Word تحميل الملف المعدل
+                if doc_name.endswith(".docx"):
+                    full_path = os.path.join(DOCS_FOLDER, doc_name)
+                    download_docx(full_path)
+
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
     if st.button("Run Classification"):
         result = classify_documents()
-        if result:
-            for file, category in result.items():
-                st.write(f"📄 **{file}** → {category}")
-        else:
-            st.info("No documents found.")
+        for file, category in result.items():
+            st.write(f"📄 **{file}** → {category}")
 
-# ✅ الإحصائيات
 elif option == "Generate Statistics":
     st.subheader("📊 Project Statistics")
     if st.button("Show Stats"):
