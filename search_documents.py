@@ -2,12 +2,10 @@ import os
 import fitz  # PyMuPDF
 import docx
 from docx.shared import RGBColor
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
 
 DOCS_FOLDER = "documents"
 
-# 🔶 تمييز الكلمة داخل PDF
+# ✅ تمييز النص داخل PDF
 def search_pdf(path, keyword):
     results = []
     try:
@@ -15,9 +13,9 @@ def search_pdf(path, keyword):
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text()
             if keyword.lower() in text.lower():
-                highlights = page.search_for(keyword)
+                highlights = page.search_for(keyword, quads=True)
                 for inst in highlights:
-                    page.add_highlight_annot(inst)
+                    page.add_highlight_annot(inst.rect)
                 lines = text.split('\n')
                 for line in lines:
                     if keyword.lower() in line.lower():
@@ -28,10 +26,13 @@ def search_pdf(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# 🔶 تمييز الكلمة داخل Word docx
+# ✅ تمييز الكلمة داخل DOCX
 def highlight_word_in_docx(paragraph, keyword):
-    for run in paragraph.runs:
-        if keyword.lower() in run.text.lower():
+    text = paragraph.text
+    paragraph.clear()
+    for word in text.split():
+        run = paragraph.add_run(word + " ")
+        if keyword.lower() in word.lower():
             run.font.highlight_color = 7  # Yellow
 
 def search_docx(path, keyword):
@@ -50,7 +51,7 @@ def search_docx(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# 🔶 تابع Streamlit لاستخدامه مع واجهة المستخدم
+# ✅ يتم استدعاؤه من main.py
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
