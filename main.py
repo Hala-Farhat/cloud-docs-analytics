@@ -64,36 +64,42 @@ def download_docx(file_path):
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-if option == "Sort Documents":
+# ✅ البحث عن كلمات وتخزين النتائج
+if option == "Search Documents":
+    st.subheader("🔍 Search Documents")
+    keyword = st.text_input("Enter keyword to search:")
+
+    if st.button("Search"):
+        results = search_documents(keyword)
+        st.session_state["search_results"] = results
+        st.session_state["search_keyword"] = keyword
+
+    if "search_results" in st.session_state and st.session_state["search_results"]:
+        keyword = st.session_state.get("search_keyword", "")
+        results = st.session_state["search_results"]
+        for doc_name, lines in results.items():
+            st.markdown(f"### 📄 {doc_name}")
+            for line in lines:
+                highlighted = line.replace(keyword, f"<mark>{keyword}</mark>")
+                st.markdown(f"• {highlighted}", unsafe_allow_html=True)
+
+            full_path = os.path.join(DOCS_FOLDER, doc_name)
+            with st.expander(f"👀 Preview & Download: {doc_name}"):
+                if doc_name.lower().endswith(".pdf"):
+                    show_pdf_in_streamlit(full_path)
+                    download_pdf(full_path)
+                elif doc_name.lower().endswith(".docx"):
+                    download_docx(full_path)
+    elif "search_results" in st.session_state:
+        st.warning("No results found.")
+
+# ✅ باقي العمليات
+elif option == "Sort Documents":
     st.subheader("📑 Sorted Document Titles")
     if st.button("Run Sorting"):
         result = sort_documents()
         for title, fname in result:
             st.write(f"📄 **{fname}** → {title}")
-
-elif option == "Search Documents":
-    st.subheader("🔍 Search Documents")
-    keyword = st.text_input("Enter keyword to search:")
-    if keyword and st.button("Search"):
-        results = search_documents(keyword)
-        if not results:
-            st.warning("No results found.")
-        else:
-            for doc_name, lines in results.items():
-                st.markdown(f"### 📄 {doc_name}")
-                for line in lines:
-                    highlighted = line.replace(keyword, f"<mark>{keyword}</mark>")
-                    st.markdown(f"• {highlighted}", unsafe_allow_html=True)
-
-                full_path = os.path.join(DOCS_FOLDER, doc_name)
-
-                with st.expander(f"👀 Preview & Download: {doc_name}"):
-                    if doc_name.lower().endswith(".pdf"):
-                        show_pdf_in_streamlit(full_path)
-                        download_pdf(full_path)
-
-                    elif doc_name.lower().endswith(".docx"):
-                        download_docx(full_path)
 
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
