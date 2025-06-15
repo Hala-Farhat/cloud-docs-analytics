@@ -1,7 +1,6 @@
 import os
 import fitz  # PyMuPDF
 import docx
-import streamlit as st
 from docx.shared import RGBColor
 
 DOCS_FOLDER = "documents"
@@ -21,7 +20,10 @@ def search_pdf(path, keyword):
                 for line in lines:
                     if keyword.lower() in line.lower():
                         results.append((page_num, line.strip()))
-        doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
+        try:
+            doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
+        except Exception as save_err:
+            print(f"[!] Warning: Could not save highlights to '{path}': {save_err}")
         doc.close()
     except Exception as e:
         print(f"[!] Error reading {path}: {e}")
@@ -53,7 +55,6 @@ def search_docx(path, keyword):
     return results
 
 # ✅ يتم استدعاؤه من main.py
-@st.cache_data(show_spinner=True)
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
