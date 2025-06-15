@@ -12,6 +12,7 @@ from stats_report import generate_stats_report
 os.makedirs("documents", exist_ok=True)
 
 # دالة لعرض PDF داخل Streamlit
+
 def show_pdf_in_streamlit(file_path):
     try:
         with open(file_path, "rb") as f:
@@ -36,7 +37,7 @@ option = st.selectbox(
 
 # ✅ رفع الملفات
 if option == "Upload File":
-    st.subheader("📤 Upload Document")
+    st.subheader("📄 Upload Document")
     uploaded_file = st.file_uploader("Upload a file (PDF or DOCX)", type=["pdf", "docx"])
     if uploaded_file:
         file_path = os.path.join("documents", uploaded_file.name)
@@ -46,7 +47,7 @@ if option == "Upload File":
 
 # ✅ فرز المستندات
 elif option == "Sort Documents":
-    st.subheader("📑 Sorted Document Titles")
+    st.subheader("📝 Sorted Document Titles")
     if st.button("Run Sorting"):
         result = sort_documents()
         if result:
@@ -59,7 +60,7 @@ elif option == "Sort Documents":
 elif option == "Search Documents":
     st.subheader("🔍 Search Documents")
     keyword = st.text_input("Enter keyword to search:")
-    
+
     if keyword and st.button("Search"):
         results = search_documents(keyword)
         if not results:
@@ -70,12 +71,17 @@ elif option == "Search Documents":
                 for line in lines:
                     st.write(f"• {line}")
 
-                # عرض PDF داخل الصفحة إذا كان PDF
+                # عرض PDF فقط إذا كان الملف PDF
                 if doc_name.lower().endswith(".pdf"):
-                    if st.button(f"👀 View {doc_name}", key=doc_name):
-                        show_pdf_in_streamlit(os.path.join("documents", doc_name))
+                    key_name = doc_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "_")
+                    if st.button(f"👀 View {doc_name}", key=key_name):
+                        file_path = os.path.join("documents", doc_name)
+                        if os.path.exists(file_path):
+                            show_pdf_in_streamlit(file_path)
+                        else:
+                            st.error("❌ File not found.")
 
-                # عرض رابط تحميل للـ Word
+                # رابط تحميل لل Word
                 elif doc_name.lower().endswith(".docx"):
                     with open(os.path.join("documents", doc_name), "rb") as f:
                         st.download_button(
@@ -87,7 +93,7 @@ elif option == "Search Documents":
 
 # ✅ تصنيف المستندات
 elif option == "Classify Documents":
-    st.subheader("🧠 Document Classification")
+    st.subheader("🧐 Document Classification")
     if st.button("Run Classification"):
         result = classify_documents()
         if result:
