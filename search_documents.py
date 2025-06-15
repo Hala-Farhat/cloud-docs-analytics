@@ -4,6 +4,7 @@ import docx
 
 DOCS_FOLDER = "documents"
 
+# Search in PDF and highlight matches
 def search_pdf(path, keyword):
     results = []
     try:
@@ -11,19 +12,20 @@ def search_pdf(path, keyword):
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text()
             if keyword.lower() in text.lower():
-                highlights = page.search_for(keyword)
+                highlights = page.search_for(keyword, quads=False)
                 for inst in highlights:
                     page.add_highlight_annot(inst)
+                doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
                 lines = text.split('\n')
                 for line in lines:
                     if keyword.lower() in line.lower():
                         results.append((page_num, line.strip()))
-        doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
         doc.close()
     except Exception as e:
         print(f"[!] Error reading {path}: {e}")
     return results
 
+# Search in Word document
 def search_docx(path, keyword):
     results = []
     try:
@@ -35,6 +37,7 @@ def search_docx(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
+# Unified search function
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
