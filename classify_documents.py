@@ -4,24 +4,51 @@ import docx
 
 DOCS_FOLDER = "documents"
 
-classification_keywords = {
-    "Education": ["student", "school", "exam", "university", "lecture", "homework", "course"],
-    "Technology": ["software", "technology", "innovation", "data center", "network", "infrastructure"],
-    "Business": ["salary", "employee", "company", "market", "management", "finance", "business"],
-    "Health": ["health", "disease", "treatment", "patient", "medical", "symptom", "virus", "hospital"],
-    "Security": ["hacking", "cyber", "malware", "breach", "firewall", "encryption", "attack", "phishing"],
-    "Math": ["equation", "math", "calculation", "variance", "mean", "probability", "algebra", "statistics"],
-    "Computer Science": ["algorithm", "data structure", "linked list", "stack", "queue", "recursion"],
-    "Programming": ["python", "java", "code", "function", "variable", "loop", "object-oriented"],
-    "AI": ["machine learning", "neural network", "deep learning", "AI", "model", "training", "classifier"],
-    "Communication": ["transmission", "data packet", "modulation", "signal", "protocol"],
-    "Writing": ["writing", "paragraph", "task", "IELTS", "composition", "grammar"],
-    "General": ["general", "misc", "overview", "notes", "info", "information"],
-    "Templates": ["template", "form", "application", "format", "structure"],
-    "Reports": ["report", "summary", "document", "feedback", "findings"]
+classification_tree = {
+    "Technology": {
+        "Programming": {
+            "Python": ["python", "pandas", "numpy", "django", "flask"],
+            "Java": ["java", "spring", "jvm", "inheritance", "oop"],
+            "Web": ["html", "css", "javascript", "react", "angular", "frontend"]
+        },
+        "Artificial Intelligence": {
+            "Machine Learning": ["machine learning", "supervised", "unsupervised", "regression"],
+            "Deep Learning": ["neural network", "deep learning", "cnn", "rnn"],
+            "NLP": ["natural language processing", "bert", "tokenization", "nlp"]
+        },
+        "Networking": {
+            "Protocols": ["http", "tcp", "udp", "ip", "protocol", "transmission"],
+            "Security": ["firewall", "encryption", "vpn", "tls", "ssl", "cyber", "attack", "malware"]
+        }
+    },
+    "Health": {
+        "Medicine": {
+            "Diseases": ["cancer", "diabetes", "covid", "flu"],
+            "Treatment": ["therapy", "surgery", "vaccine", "antibiotic", "treatment"]
+        },
+        "Nutrition": {
+            "Diet": ["diet", "calories", "protein", "carbohydrate", "nutrition", "food"],
+            "Supplements": ["vitamin", "omega", "zinc", "magnesium", "supplement"]
+        }
+    },
+    "Education": {
+        "Higher Education": {
+            "University": ["university", "college", "campus", "faculty"],
+            "Courses": ["lecture", "course", "exam", "credit", "syllabus", "schedule"],
+            "Assignments": ["assignment", "task", "homework", "question", "problem", "solution"]
+        },
+        "School": {
+            "Subjects": ["math", "science", "history", "language", "english", "biology", "physics"],
+            "Activities": ["project", "activity", "worksheet", "presentation"]
+        }
+    },
+    "Math": {
+        "Discrete Math": {
+            "Set Theory": ["set", "subset", "intersection", "union", "venn", "relation", "element"],
+            "Logic": ["boolean", "truth table", "implication", "proposition", "proof", "induction"]
+        }
+    }
 }
-
-
 
 def extract_pdf_text(path):
     try:
@@ -33,7 +60,6 @@ def extract_pdf_text(path):
     except:
         return ""
 
-
 def extract_docx_text(path):
     try:
         doc = docx.Document(path)
@@ -41,26 +67,24 @@ def extract_docx_text(path):
     except:
         return ""
 
-
 def classify_document(text):
-    scores = {label: 0 for label in classification_keywords}
-    for label, keywords in classification_keywords.items():
-        for word in keywords:
-            scores[label] += text.count(word)
-    return max(scores, key=scores.get) if any(scores.values()) else "Uncategorized"
+    best_score = 0
+    best_path = "Uncategorized"
 
+    def recursive_score(node, path=""):
+        nonlocal best_score, best_path
+        for key, val in node.items():
+            current_path = f"{path} > {key}" if path else key
+            if isinstance(val, dict):
+                recursive_score(val, current_path)
+            elif isinstance(val, list):
+                score = sum(text.count(word) for word in val)
+                if score > best_score:
+                    best_score = score
+                    best_path = current_path
 
-print("Document Classification:\n")
-for filename in os.listdir(DOCS_FOLDER):
-    full_path = os.path.join(DOCS_FOLDER, filename)
-    if filename.endswith(".pdf"):
-        text = extract_pdf_text(full_path)
-    elif filename.endswith(".docx"):
-        text = extract_docx_text(full_path)
-    else:
-        continue
-    label = classify_document(text)
-    print(f"{filename} → {label}")
+    recursive_score(classification_tree)
+    return best_path
 
 def classify_documents():
     results = {}
@@ -75,3 +99,9 @@ def classify_documents():
         label = classify_document(text)
         results[filename] = label
     return results
+
+if __name__ == "__main__":
+    print("Document Classification:\n")
+    results = classify_documents()
+    for fname, label in results.items():
+        print(f"{fname} → {label}")
