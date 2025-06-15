@@ -1,5 +1,5 @@
 import os
-import fitz  
+import fitz
 import docx
 
 DOCS_FOLDER = "documents"
@@ -24,7 +24,6 @@ def get_docx_title(path):
     except:
         return None
 
-
 def sort_documents():
     titles = []
     for filename in os.listdir(DOCS_FOLDER):
@@ -35,11 +34,8 @@ def sort_documents():
             title = get_docx_title(full_path)
         else:
             continue
-
         if not title:
             title = "Unknown Title"
-
         titles.append((title, filename))
-
     titles.sort(key=lambda x: x[0].lower())
     return titles
