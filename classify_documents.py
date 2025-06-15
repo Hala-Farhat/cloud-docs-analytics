@@ -99,9 +99,3 @@ def classify_documents():
         label = classify_document(text)
         results[filename] = label
     return results
-
-if __name__ == "__main__":
-    print("Document Classification:\n")
-    results = classify_documents()
-    for fname, label in results.items():
-        print(f"{fname} → {label}")
