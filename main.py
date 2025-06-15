@@ -5,12 +5,16 @@ from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
 
-# إنشاء مجلد "documents" إذا لم يكن موجودًا
+# تأكد من وجود مجلد الوثائق
 os.makedirs("documents", exist_ok=True)
 
 # إعداد الصفحة
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 
+# رسالة تأكيد تشغيل
+st.success("✅ Application is running successfully!")
+
+# العنوان والواجهة الأساسية
 st.title("📂 Cloud Document Analyzer")
 st.info("Select a function from below and click the button to run it.")
 
@@ -20,10 +24,11 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# التعامل مع الخيار المختار
+# العرض الافتراضي إن لم يتم اختيار شيء
 if option == "-- Select --":
     st.warning("Please select a function from the dropdown above to begin.")
 
+# فرز المستندات
 elif option == "Sort Documents":
     st.subheader("📑 Sorted Document Titles")
     if st.button("Run Sorting"):
@@ -34,6 +39,7 @@ elif option == "Sort Documents":
         else:
             st.info("No documents found.")
 
+# البحث داخل المستندات
 elif option == "Search Documents":
     st.subheader("🔍 Search Documents")
     keyword = st.text_input("Enter keyword to search:")
@@ -47,6 +53,7 @@ elif option == "Search Documents":
                 for line in lines:
                     st.write(f"• {line}")
 
+# تصنيف المستندات
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
     if st.button("Run Classification"):
@@ -57,6 +64,7 @@ elif option == "Classify Documents":
         else:
             st.info("No documents found.")
 
+# إظهار الإحصائيات
 elif option == "Generate Statistics":
     st.subheader("📊 Project Statistics")
     if st.button("Show Stats"):
