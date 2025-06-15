@@ -1,7 +1,8 @@
 import os
 import base64
-import urllib.parse
 import streamlit as st
+import streamlit.components.v1 as components
+
 from sort_documents import sort_documents
 from search_documents import search_documents
 from classify_documents import classify_documents
@@ -20,14 +21,21 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# ✅ عرض PDF داخل iframe
+# ✅ عرض PDF داخل iframe باستخدام components.html()
 def show_pdf_in_streamlit(file_path):
     try:
         with open(file_path, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-        encoded_path = urllib.parse.quote(file_path)
-        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
+            base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+        pdf_display = f'''
+            <iframe
+                src="data:application/pdf;base64,{base64_pdf}"
+                width="100%"
+                height="800"
+                type="application/pdf"
+                style="border: none;"
+            ></iframe>
+        '''
+        components.html(pdf_display, height=800, scrolling=True)
     except Exception as e:
         st.error(f"⚠️ Error displaying PDF: {e}")
 
@@ -71,7 +79,6 @@ elif option == "Search Documents":
 
                 if doc_name.lower().endswith(".docx"):
                     download_docx(full_path)
-
 
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
