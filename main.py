@@ -21,7 +21,7 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# ✅ عرض PDF داخل iframe باستخدام components.html()
+# ✅ عرض PDF داخل iframe
 def show_pdf_in_streamlit(file_path):
     try:
         with open(file_path, "rb") as f:
@@ -39,7 +39,21 @@ def show_pdf_in_streamlit(file_path):
     except Exception as e:
         st.error(f"⚠️ Error displaying PDF: {e}")
 
-# ✅ تحميل ملف DOCX بعد التمييز
+# ✅ تحميل ملف PDF
+def download_pdf(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        st.download_button(
+            label="⬇️ Download PDF with Highlights",
+            data=base64.b64decode(b64),
+            file_name=os.path.basename(file_path),
+            mime="application/pdf"
+        )
+    except:
+        st.warning("❗ Could not load PDF for download.")
+
+# ✅ تحميل ملف DOCX
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -73,12 +87,13 @@ elif option == "Search Documents":
 
                 full_path = os.path.join(DOCS_FOLDER, doc_name)
 
-                if doc_name.lower().endswith(".pdf"):
-                    with st.expander(f"👀 Preview {doc_name}"):
+                with st.expander(f"👀 Preview & Download: {doc_name}"):
+                    if doc_name.lower().endswith(".pdf"):
                         show_pdf_in_streamlit(full_path)
+                        download_pdf(full_path)
 
-                if doc_name.lower().endswith(".docx"):
-                    download_docx(full_path)
+                    elif doc_name.lower().endswith(".docx"):
+                        download_docx(full_path)
 
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
