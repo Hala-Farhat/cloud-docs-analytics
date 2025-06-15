@@ -1,5 +1,5 @@
 import os
-import fitz
+import fitz  # PyMuPDF
 import docx
 
 DOCS_FOLDER = "documents"
