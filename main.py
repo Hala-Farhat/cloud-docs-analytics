@@ -5,30 +5,23 @@ from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
 
-# تأكد من وجود مجلد الوثائق
 os.makedirs("documents", exist_ok=True)
-
-# إعداد الصفحة
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
-
-# رسالة تأكيد تشغيل
 st.success("✅ Application is running successfully!")
-
-# العنوان والواجهة الأساسية
 st.title("📂 Cloud Document Analyzer")
-st.info("Select a function from below and click the button to run it.")
+st.info("Upload documents, then select a function to perform.")
 
-# القائمة المنسدلة لاختيار الوظيفة
-option = st.selectbox(
-    "Choose a function to perform:",
-    ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
-)
+st.subheader("📤 Upload New Documents")
+uploaded_files = st.file_uploader("Upload PDF or DOCX files", type=["pdf", "docx"], accept_multiple_files=True)
+if uploaded_files:
+    for uploaded_file in uploaded_files:
+        with open(os.path.join("documents", uploaded_file.name), "wb") as f:
+            f.write(uploaded_file.getbuffer())
+    st.success(f"Uploaded {len(uploaded_files)} file(s) successfully.")
 
-# العرض الافتراضي إن لم يتم اختيار شيء
+option = st.selectbox("Choose a function to perform:", ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics"))
 if option == "-- Select --":
     st.warning("Please select a function from the dropdown above to begin.")
-
-# فرز المستندات
 elif option == "Sort Documents":
     st.subheader("📑 Sorted Document Titles")
     if st.button("Run Sorting"):
@@ -38,8 +31,6 @@ elif option == "Sort Documents":
                 st.write(f"📄 **{fname}** → {title}")
         else:
             st.info("No documents found.")
-
-# البحث داخل المستندات
 elif option == "Search Documents":
     st.subheader("🔍 Search Documents")
     keyword = st.text_input("Enter keyword to search:")
@@ -52,8 +43,6 @@ elif option == "Search Documents":
                 st.markdown(f"### 📄 {doc_name}")
                 for line in lines:
                     st.write(f"• {line}")
-
-# تصنيف المستندات
 elif option == "Classify Documents":
     st.subheader("🧠 Document Classification")
     if st.button("Run Classification"):
@@ -63,8 +52,6 @@ elif option == "Classify Documents":
                 st.write(f"📄 **{file}** → {category}")
         else:
             st.info("No documents found.")
-
-# إظهار الإحصائيات
 elif option == "Generate Statistics":
     st.subheader("📊 Project Statistics")
     if st.button("Show Stats"):
