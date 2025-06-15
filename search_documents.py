@@ -1,6 +1,7 @@
 import os
 import fitz  # PyMuPDF
 import docx
+import streamlit as st
 from docx.shared import RGBColor
 
 DOCS_FOLDER = "documents"
@@ -52,6 +53,7 @@ def search_docx(path, keyword):
     return results
 
 # ✅ يتم استدعاؤه من main.py
+@st.cache_data(show_spinner=True)
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
