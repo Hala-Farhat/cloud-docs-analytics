@@ -11,11 +11,22 @@ from stats_report import generate_stats_report
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
+# ✅ إعداد الصفحة
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 st.title("📂 Cloud Document Analyzer")
 st.success("✅ Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
+# ✅ قسم رفع الملفات في الشريط الجانبي
+st.sidebar.header("📤 Upload Document")
+uploaded_file = st.sidebar.file_uploader("Choose a file (.pdf or .docx)", type=["pdf", "docx"])
+if uploaded_file is not None:
+    save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
+    with open(save_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved successfully.")
+
+# ✅ اختيار العملية
 option = st.selectbox(
     "Choose a function to perform:",
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
