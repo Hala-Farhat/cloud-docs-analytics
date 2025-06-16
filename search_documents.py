@@ -1,11 +1,10 @@
 import os
 import fitz  # PyMuPDF
 import docx
-from docx.shared import RGBColor
 
 DOCS_FOLDER = "documents"
 
-# ✅ تمييز النص داخل PDF
+# ✅ تمييز الكلمة داخل PDF
 def search_pdf(path, keyword):
     results = []
     try:
@@ -15,7 +14,10 @@ def search_pdf(path, keyword):
             if keyword.lower() in text.lower():
                 highlights = page.search_for(keyword, quads=True)
                 for inst in highlights:
-                    page.add_highlight_annot(inst.rect)
+                    try:
+                        page.add_highlight_annot(inst.rect)
+                    except Exception:
+                        continue
                 lines = text.split('\n')
                 for line in lines:
                     if keyword.lower() in line.lower():
@@ -54,19 +56,21 @@ def search_docx(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ يتم استدعاؤه من main.py
+# ✅ استدعاء من main.py
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
         full_path = os.path.join(DOCS_FOLDER, filename)
         matches = []
+
         if filename.lower().endswith(".pdf"):
             matches = search_pdf(full_path, keyword)
             if matches:
-                lines = [f"Page {p}: {line}" for p, line in matches]
-                result_dict[filename] = lines
+                result_dict[filename] = [f"Page {p}: {line}" for p, line in matches]
+
         elif filename.lower().endswith(".docx"):
             matches = search_docx(full_path, keyword)
             if matches:
                 result_dict[filename] = matches
+
     return result_dict
