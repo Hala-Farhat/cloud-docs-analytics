@@ -7,6 +7,7 @@ from sort_documents import sort_documents
 from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
+from drive_uploader import upload_to_drive  # ✅ جديد
 
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
@@ -18,13 +19,21 @@ st.success("✅ Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
 # ✅ قسم رفع الملفات في الشريط الجانبي
+DRIVE_FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"  # 🔁 غيره حسب مجلدك في Google Drive
+
 st.sidebar.header("📤 Upload Document")
 uploaded_file = st.sidebar.file_uploader("Choose a file (.pdf or .docx)", type=["pdf", "docx"])
 if uploaded_file is not None:
     save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved successfully.")
+    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved locally.")
+
+    try:
+        status = upload_to_drive(save_path, DRIVE_FOLDER_ID)  # ✅ رفعه إلى Google Drive
+        st.sidebar.info(status)
+    except Exception as e:
+        st.sidebar.error(f"❌ Upload failed: {e}")
 
 # ✅ اختيار العملية
 option = st.selectbox(
