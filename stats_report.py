@@ -1,63 +1,72 @@
 import os
 import time
-import fitz
+import fitz  # PyMuPDF
 import docx
 
 DOCS_FOLDER = "documents"
 
+# ✅ حساب حجم الملف بالكيلوبايت
 def get_file_size(path):
     return os.path.getsize(path) / 1024  # KB
 
+# ✅ إرجاع جميع ملفات .pdf و .docx
 def count_documents():
-    return [f for f in os.listdir(DOCS_FOLDER) if f.endswith(('.pdf', '.docx'))]
+    return [f for f in os.listdir(DOCS_FOLDER) if f.lower().endswith(('.pdf', '.docx'))]
 
+# ✅ محاكاة وقت فرز الملفات
 def simulate_sorting(documents):
     start = time.time()
     for filename in documents:
         path = os.path.join(DOCS_FOLDER, filename)
         try:
-            if filename.endswith('.pdf'):
+            if filename.lower().endswith('.pdf'):
                 with fitz.open(path) as doc:
                     _ = doc[0].get_text()
-            elif filename.endswith('.docx'):
+            elif filename.lower().endswith('.docx'):
                 doc = docx.Document(path)
                 _ = doc.paragraphs[0].text
-        except:
+        except Exception as e:
+            print(f"[!] Skipping {filename}: {e}")
             continue
     return time.time() - start
 
+# ✅ محاكاة وقت البحث عن كلمة
 def simulate_search(documents, keyword="data"):
     start = time.time()
     for filename in documents:
         path = os.path.join(DOCS_FOLDER, filename)
         try:
-            if filename.endswith('.pdf'):
+            if filename.lower().endswith('.pdf'):
                 with fitz.open(path) as doc:
                     for page in doc:
                         _ = keyword.lower() in page.get_text().lower()
-            elif filename.endswith('.docx'):
+            elif filename.lower().endswith('.docx'):
                 doc = docx.Document(path)
                 for para in doc.paragraphs:
                     _ = keyword.lower() in para.text.lower()
-        except:
+        except Exception as e:
+            print(f"[!] Error searching {filename}: {e}")
             continue
     return time.time() - start
 
+# ✅ محاكاة وقت التصنيف
 def simulate_classification(documents):
     start = time.time()
     for filename in documents:
         path = os.path.join(DOCS_FOLDER, filename)
         try:
-            if filename.endswith('.pdf'):
+            if filename.lower().endswith('.pdf'):
                 with fitz.open(path) as doc:
                     _ = ''.join(page.get_text() for page in doc)
-            elif filename.endswith('.docx'):
+            elif filename.lower().endswith('.docx'):
                 doc = docx.Document(path)
                 _ = "\n".join(para.text for para in doc.paragraphs)
-        except:
+        except Exception as e:
+            print(f"[!] Error classifying {filename}: {e}")
             continue
     return time.time() - start
 
+# ✅ توليد تقرير الإحصائيات الكامل
 def generate_stats_report():
     docs = count_documents()
     file_count = len(docs)
