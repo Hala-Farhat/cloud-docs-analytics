@@ -7,46 +7,55 @@ from sort_documents import sort_documents
 from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
-from drive_uploader import upload_to_drive  # ✅ رفع فقط
+from drive_downloader import download_from_drive
+from drive_uploader import upload_to_drive
 
+FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# ✅ إعداد الصفحة
+# ✅ تحميل الملفات من Google Drive عند تشغيل التطبيق
+download_from_drive(FOLDER_ID)
+
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 st.title("📂 Cloud Document Analyzer")
 st.success("✅ Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
-# ✅ رفع الملفات للـ Google Drive والمجلد المحلي
-DRIVE_FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"  # 🔁 غيره إذا لازم
+# ✅ قسم رفع الملفات
 st.sidebar.header("📤 Upload Document")
 uploaded_file = st.sidebar.file_uploader("Choose a file (.pdf or .docx)", type=["pdf", "docx"])
 if uploaded_file is not None:
     save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved locally.")
-    try:
-        status = upload_to_drive(save_path, DRIVE_FOLDER_ID)
-        st.sidebar.info(status)
-    except Exception as e:
-        st.sidebar.error(f"❌ Upload failed: {e}")
+    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved successfully.")
 
-# ✅ عرض PDF داخل iframe
+    # ✅ رفعه إلى Google Drive تلقائيًا
+    upload_message = upload_to_drive(save_path, FOLDER_ID)
+    st.sidebar.info(upload_message)
+
+# ✅ اختيار العملية
+option = st.selectbox(
+    "Choose a function to perform:",
+    ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
+)
+
 def show_pdf_in_streamlit(file_path):
     try:
         with open(file_path, "rb") as f:
             base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-        pdf_display = f"""
-            <iframe src="data:application/pdf;base64,{base64_pdf}"
-            width="100%" height="800" type="application/pdf" style="border: none;"></iframe>
-        """
+        pdf_display = f'''
+            <iframe
+                src="data:application/pdf;base64,{base64_pdf}"
+                width="100%" height="800" type="application/pdf"
+                style="border: none;"
+            ></iframe>
+        '''
         components.html(pdf_display, height=800, scrolling=True)
     except Exception as e:
         st.error(f"⚠️ Error displaying PDF: {e}")
 
-# ✅ تحميل ملف PDF
 def download_pdf(file_path):
     try:
         with open(file_path, "rb") as f:
@@ -60,7 +69,6 @@ def download_pdf(file_path):
     except:
         st.warning("❗ Could not load PDF for download.")
 
-# ✅ تحميل ملف DOCX
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -70,12 +78,6 @@ def download_docx(file_path):
         file_name=os.path.basename(file_path),
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
-
-# ✅ تشغيل الوظائف
-option = st.selectbox(
-    "Choose a function to perform:",
-    ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
-)
 
 if option == "Search Documents":
     st.subheader("🔍 Search Documents")
