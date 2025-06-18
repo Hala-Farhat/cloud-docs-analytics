@@ -1,16 +1,15 @@
 
 import os
 import io
+import streamlit as st
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
-# إعداد الاتصال عبر Google Drive API باستخدام service account
-SERVICE_ACCOUNT_FILE = 'credentials.json'
+# إعداد الاتصال عبر Google Drive API باستخدام streamlit secrets
 SCOPES = ['https://www.googleapis.com/auth/drive']
-
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gdrive"], scopes=SCOPES
 )
 
 drive_service = build('drive', 'v3', credentials=credentials)
