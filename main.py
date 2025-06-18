@@ -7,8 +7,8 @@ from sort_documents import sort_documents
 from search_documents import search_documents
 from classify_documents import classify_documents
 from stats_report import generate_stats_report
-from drive_downloader import download_from_drive
-from drive_uploader import upload_to_drive
+from gdrive_utils import download_from_drive, upload_to_drive
+
 
 FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
