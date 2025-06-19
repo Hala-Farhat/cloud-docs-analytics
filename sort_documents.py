@@ -1,5 +1,5 @@
 import os
-import fitz  # PyMuPDF
+import fitz  
 import docx
 
 DOCS_FOLDER = "documents"
@@ -48,6 +48,6 @@ def sort_documents():
 
         titles.append((title, filename))
 
-    # ✅ الترتيب حسب العنوان الأبجدي (غير حساس لحالة الحرف)
+
     titles.sort(key=lambda x: x[0].lower())
     return titles
