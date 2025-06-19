@@ -53,4 +53,4 @@ def upload_to_drive(file_path, folder_id):
         fields='id'
     ).execute()
 
-    return f"✅ Uploaded to Drive: {file_name}"
+    return f" Uploaded to Drive: {file_name}"
