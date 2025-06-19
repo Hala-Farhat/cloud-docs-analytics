@@ -4,7 +4,7 @@ import docx
 
 DOCS_FOLDER = "documents"
 
-# ✅ استخراج عنوان أول صفحة من PDF
+
 def get_pdf_title(path):
     try:
         with fitz.open(path) as doc:
@@ -16,7 +16,7 @@ def get_pdf_title(path):
         print(f"[!] Error reading PDF '{path}': {e}")
     return None
 
-# ✅ استخراج أول فقرة نصية من ملف DOCX
+
 def get_docx_title(path):
     try:
         doc = docx.Document(path)
@@ -28,13 +28,13 @@ def get_docx_title(path):
         print(f"[!] Error reading DOCX '{path}': {e}")
     return None
 
-# ✅ ترتيب الملفات حسب العنوان داخلها
+
 def sort_documents():
     titles = []
     for filename in os.listdir(DOCS_FOLDER):
         full_path = os.path.join(DOCS_FOLDER, filename)
 
-        # تجاهل الملفات غير المدعومة
+
         if filename.lower().endswith(".pdf"):
             title = get_pdf_title(full_path)
         elif filename.lower().endswith(".docx"):
@@ -42,7 +42,7 @@ def sort_documents():
         else:
             continue
 
-        # إذا ما في عنوان واضح، استخدم "Unknown Title"
+
         if not title:
             title = "Unknown Title"
 
