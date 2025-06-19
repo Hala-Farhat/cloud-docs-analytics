@@ -60,7 +60,6 @@ st.markdown(custom_css, unsafe_allow_html=True)
 
 st.set_page_config(page_title="Cloud Document Analyzer Platform", layout="centered")
 st.title("Cloud Document Analyzer Platform")
-st.success("Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
 st.sidebar.header("Upload Document")
