@@ -2,6 +2,7 @@ import os
 import base64
 import streamlit as st
 import streamlit.components.v1 as components
+import docx
 
 from sort_documents import sort_documents
 from search_documents import search_documents
@@ -39,31 +40,38 @@ option = st.selectbox(
 )
 
 # عرض PDF داخل الصفحة
+
 def show_pdf(file_path):
     try:
         with open(file_path, "rb") as f:
             base64_pdf = base64.b64encode(f.read()).decode("utf-8")
         components.html(
-            f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px"></iframe>',
+            f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" type="application/pdf"></iframe>',
             height=800,
         )
     except Exception as e:
         st.error(f"⚠️ Could not display PDF: {e}")
         st.info("You can open this file manually from the Drive folder.")
 
-# عرض محتوى DOCX
-def show_docx(file_path):
-    import docx
+# عرض محتوى DOCX مع تمييز الكلمات
+
+def show_docx_highlighted(file_path, keyword):
     try:
         doc = docx.Document(file_path)
         st.markdown("---")
         for para in doc.paragraphs:
-            if para.text.strip():
-                st.markdown(para.text)
+            text = para.text.strip()
+            if text:
+                if keyword.lower() in text.lower():
+                    highlighted = text.replace(keyword, f"<mark>{keyword}</mark>")
+                    st.markdown(highlighted, unsafe_allow_html=True)
+                else:
+                    st.markdown(text)
     except Exception as e:
         st.error(f"⚠️ Error displaying Word file: {e}")
 
 # زر لتحميل ملفات DOCX فقط
+
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -98,7 +106,7 @@ if option == "Search Documents":
                 if doc_name.lower().endswith(".pdf"):
                     show_pdf(full_path)
                 elif doc_name.lower().endswith(".docx"):
-                    show_docx(full_path)
+                    show_docx_highlighted(full_path, keyword)
                     download_docx(full_path)
 
     elif "search_results" in st.session_state:
