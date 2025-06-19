@@ -14,7 +14,7 @@ FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# تحميل الملفات من Google Drive مع استخراج معرفاتها
+# تحميل الملفات من Google Drive مع حفظ معرفاتها
 file_ids = download_from_drive(FOLDER_ID)
 
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
@@ -29,9 +29,12 @@ if uploaded_file is not None:
     save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved successfully.")
-    upload_message = upload_to_drive(save_path, FOLDER_ID)
-    st.sidebar.info(upload_message)
+
+    # رفع إلى Drive والحصول على ID
+    upload_message, file_id = upload_to_drive(save_path, FOLDER_ID)
+    file_ids[uploaded_file.name] = file_id
+    st.sidebar.success(f"✅ File '{uploaded_file.name}' uploaded successfully.")
+    st.sidebar.markdown(f"[📄 Open on Google Drive](https://drive.google.com/file/d/{file_id}/view)")
 
 # اختيار العملية
 option = st.selectbox(
@@ -39,16 +42,16 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# عرض PDF داخل الصفحة أو بالرابط
-
+# عرض PDF برابط مباشر من Google Drive
 def show_pdf_drive_link(doc_name):
     file_id = file_ids.get(doc_name)
     if file_id:
         link = f"https://drive.google.com/file/d/{file_id}/view"
         st.markdown(f"[📄 Open PDF in Google Drive]({link})", unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ No file ID found for this document.")
 
 # عرض محتوى DOCX مع تمييز الكلمات
-
 def show_docx_highlighted(file_path, keyword):
     try:
         doc = docx.Document(file_path)
@@ -65,7 +68,6 @@ def show_docx_highlighted(file_path, keyword):
         st.error(f"⚠️ Error displaying Word file: {e}")
 
 # زر لتحميل ملفات DOCX فقط
-
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
