@@ -14,8 +14,8 @@ FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# تحميل الملفات من Google Drive
-download_from_drive(FOLDER_ID)
+# تحميل الملفات من Google Drive مع استخراج معرفاتها
+file_ids = download_from_drive(FOLDER_ID)
 
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 st.title("📂 Cloud Document Analyzer")
@@ -39,19 +39,13 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# عرض PDF داخل الصفحة
+# عرض PDF داخل الصفحة أو بالرابط
 
-def show_pdf(file_path):
-    try:
-        with open(file_path, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-        components.html(
-            f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" type="application/pdf"></iframe>',
-            height=800,
-        )
-    except Exception as e:
-        st.error(f"⚠️ Could not display PDF: {e}")
-        st.info("You can open this file manually from the Drive folder.")
+def show_pdf_drive_link(doc_name):
+    file_id = file_ids.get(doc_name)
+    if file_id:
+        link = f"https://drive.google.com/file/d/{file_id}/view"
+        st.markdown(f"[📄 Open PDF in Google Drive]({link})", unsafe_allow_html=True)
 
 # عرض محتوى DOCX مع تمييز الكلمات
 
@@ -104,7 +98,7 @@ if option == "Search Documents":
             full_path = os.path.join(DOCS_FOLDER, doc_name)
             with st.expander(f"👁️ View {doc_name}"):
                 if doc_name.lower().endswith(".pdf"):
-                    show_pdf(full_path)
+                    show_pdf_drive_link(doc_name)
                 elif doc_name.lower().endswith(".docx"):
                     show_docx_highlighted(full_path, keyword)
                     download_docx(full_path)
