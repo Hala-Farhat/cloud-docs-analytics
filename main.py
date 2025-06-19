@@ -14,8 +14,8 @@ FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# تحميل الملفات من Google Drive مع حفظ معرفاتها
-file_ids = download_from_drive(FOLDER_ID)
+# تحميل الملفات من Google Drive
+download_from_drive(FOLDER_ID)
 
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 st.title("📂 Cloud Document Analyzer")
@@ -29,12 +29,9 @@ if uploaded_file is not None:
     save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-
-    # رفع إلى Drive والحصول على ID
-    upload_message, file_id = upload_to_drive(save_path, FOLDER_ID)
-    file_ids[uploaded_file.name] = file_id
-    st.sidebar.success(f"✅ File '{uploaded_file.name}' uploaded successfully.")
-    st.sidebar.markdown(f"[📄 Open on Google Drive](https://drive.google.com/file/d/{file_id}/view)")
+    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved successfully.")
+    upload_message = upload_to_drive(save_path, FOLDER_ID)
+    st.sidebar.info(upload_message)
 
 # اختيار العملية
 option = st.selectbox(
@@ -42,16 +39,22 @@ option = st.selectbox(
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# عرض PDF برابط مباشر من Google Drive
-def show_pdf_drive_link(doc_name):
-    file_id = file_ids.get(doc_name)
-    if file_id:
-        link = f"https://drive.google.com/file/d/{file_id}/view"
-        st.markdown(f"[📄 Open PDF in Google Drive]({link})", unsafe_allow_html=True)
-    else:
-        st.warning("⚠️ No file ID found for this document.")
+# عرض PDF داخل الصفحة
+
+def show_pdf(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+        components.html(
+            f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" type="application/pdf"></iframe>',
+            height=800,
+        )
+    except Exception as e:
+        st.error(f"⚠️ Could not display PDF: {e}")
+        st.info("You can open this file manually from the Drive folder.")
 
 # عرض محتوى DOCX مع تمييز الكلمات
+
 def show_docx_highlighted(file_path, keyword):
     try:
         doc = docx.Document(file_path)
@@ -68,6 +71,7 @@ def show_docx_highlighted(file_path, keyword):
         st.error(f"⚠️ Error displaying Word file: {e}")
 
 # زر لتحميل ملفات DOCX فقط
+
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -100,7 +104,7 @@ if option == "Search Documents":
             full_path = os.path.join(DOCS_FOLDER, doc_name)
             with st.expander(f"👁️ View {doc_name}"):
                 if doc_name.lower().endswith(".pdf"):
-                    show_pdf_drive_link(doc_name)
+                    show_pdf(full_path)
                 elif doc_name.lower().endswith(".docx"):
                     show_docx_highlighted(full_path, keyword)
                     download_docx(full_path)
@@ -127,4 +131,4 @@ elif option == "Generate Statistics":
     if st.button("Show Stats"):
         stats = generate_stats_report()
         for line in stats:
-            st.write(line)
+            st.write(line)  
