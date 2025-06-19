@@ -1,19 +1,19 @@
 import os
 import time
-import fitz  # PyMuPDF
+import fitz  
 import docx
 
 DOCS_FOLDER = "documents"
 
-# ✅ حساب حجم الملف بالكيلوبايت
-def get_file_size(path):
-    return os.path.getsize(path) / 1024  # KB
 
-# ✅ إرجاع جميع ملفات .pdf و .docx
+def get_file_size(path):
+    return os.path.getsize(path) / 1024  
+
+
 def count_documents():
     return [f for f in os.listdir(DOCS_FOLDER) if f.lower().endswith(('.pdf', '.docx'))]
 
-# ✅ محاكاة وقت فرز الملفات
+
 def simulate_sorting(documents):
     start = time.time()
     for filename in documents:
@@ -30,7 +30,7 @@ def simulate_sorting(documents):
             continue
     return time.time() - start
 
-# ✅ محاكاة وقت البحث عن كلمة
+
 def simulate_search(documents, keyword="data"):
     start = time.time()
     for filename in documents:
@@ -49,7 +49,7 @@ def simulate_search(documents, keyword="data"):
             continue
     return time.time() - start
 
-# ✅ محاكاة وقت التصنيف
+
 def simulate_classification(documents):
     start = time.time()
     for filename in documents:
@@ -66,7 +66,7 @@ def simulate_classification(documents):
             continue
     return time.time() - start
 
-# ✅ توليد تقرير الإحصائيات الكامل
+
 def generate_stats_report():
     docs = count_documents()
     file_count = len(docs)
