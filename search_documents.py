@@ -1,4 +1,4 @@
- import os
+import os
 import fitz  # PyMuPDF
 import docx
 
@@ -12,10 +12,10 @@ def search_pdf(path, keyword):
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text()
             if keyword.lower() in text.lower():
-                highlights = page.search_for(keyword, quads=True)
+                highlights = page.search_for(keyword)
                 for inst in highlights:
                     try:
-                        page.add_highlight_annot(inst.rect)
+                        page.add_highlight_annot(inst)
                     except Exception:
                         continue
                 lines = text.split('\n')
@@ -28,7 +28,7 @@ def search_pdf(path, keyword):
             print(f"[!] Warning: Could not save highlights to '{path}': {save_err}")
         doc.close()
     except Exception as e:
-        print(f"[!] Error reading {path}: {e}")
+        print(f"[!] Error reading PDF {path}: {e}")
     return results
 
 # ✅ التمييز داخل DOCX
@@ -38,7 +38,7 @@ def highlight_word_in_docx(paragraph, keyword):
     for word in text.split():
         run = paragraph.add_run(word + " ")
         if keyword.lower() in word.lower():
-            run.font.highlight_color = 7  # Yellow
+            run.font.highlight_color = 7  # Yellow (WD_COLOR_INDEX.YELLOW)
 
 def search_docx(path, keyword):
     results = []
@@ -53,15 +53,14 @@ def search_docx(path, keyword):
         if changed:
             doc.save(path)
     except Exception as e:
-        print(f"[!] Error reading {path}: {e}")
+        print(f"[!] Error reading Word file {path}: {e}")
     return results
 
-# ✅ البحث العام
+# ✅ البحث العام في جميع الملفات
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
         full_path = os.path.join(DOCS_FOLDER, filename)
-        matches = []
 
         if filename.lower().endswith(".pdf"):
             matches = search_pdf(full_path, keyword)
