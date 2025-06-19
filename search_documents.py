@@ -4,7 +4,6 @@ import docx
 
 DOCS_FOLDER = "documents"
 
-# ✅ البحث داخل PDF مع التمييز
 def search_pdf(path, keyword):
     results = []
     try:
@@ -22,25 +21,19 @@ def search_pdf(path, keyword):
                 for line in lines:
                     if keyword.lower() in line.lower():
                         results.append((page_num, line.strip()))
-        try:
-            doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
-        except Exception as save_err:
-            print(f"[!] Warning: Could not save highlights to '{path}': {save_err}")
+        doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
         doc.close()
     except Exception as e:
-        print(f"[!] Error reading PDF {path}: {e}")
+        print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ التمييز داخل DOCX
 def highlight_word_in_docx(paragraph, keyword):
-    from docx.oxml.ns import qn
     text = paragraph.text
     paragraph.clear()
-
     for word in text.split():
         run = paragraph.add_run(word + " ")
         if keyword.lower() in word.lower():
-            run.font.highlight_color = 7  # Yellow (docx.enum.text.WD_COLOR_INDEX.YELLOW)
+            run.font.highlight_color = 7  # Yellow
 
 def search_docx(path, keyword):
     results = []
@@ -55,16 +48,17 @@ def search_docx(path, keyword):
         if changed:
             doc.save(path)
     except Exception as e:
-        print(f"[!] Error reading DOCX {path}: {e}")
+        print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ البحث العام في المستندات
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
         full_path = os.path.join(DOCS_FOLDER, filename)
-        matches = []
+        if not os.path.isfile(full_path):
+            continue
 
+        matches = []
         if filename.lower().endswith(".pdf"):
             matches = search_pdf(full_path, keyword)
             if matches:
