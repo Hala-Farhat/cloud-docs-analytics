@@ -4,7 +4,6 @@ import docx
 
 DOCS_FOLDER = "documents"
 
-# ✅ شجرة التصنيف المعتمدة
 classification_tree = {
     "Technology": {
         "Programming": {
@@ -51,7 +50,7 @@ classification_tree = {
     }
 }
 
-# ✅ استخراج نص من PDF
+
 def extract_pdf_text(path):
     try:
         with fitz.open(path) as doc:
@@ -60,7 +59,7 @@ def extract_pdf_text(path):
         print(f"[!] Error reading PDF '{path}': {e}")
         return ""
 
-# ✅ استخراج نص من DOCX
+
 def extract_docx_text(path):
     try:
         doc = docx.Document(path)
@@ -69,7 +68,7 @@ def extract_docx_text(path):
         print(f"[!] Error reading DOCX '{path}': {e}")
         return ""
 
-# ✅ تصنيف المستند بناءً على أكثر الكلمات المطابقة
+
 def classify_document(text):
     best_score = 0
     best_path = "Uncategorized"
@@ -89,7 +88,7 @@ def classify_document(text):
     recursive_score(classification_tree)
     return best_path
 
-# ✅ تنفيذ التصنيف على جميع المستندات في المجلد
+
 def classify_documents():
     results = {}
     for filename in os.listdir(DOCS_FOLDER):
