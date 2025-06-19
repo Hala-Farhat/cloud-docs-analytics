@@ -4,6 +4,7 @@ import docx
 
 DOCS_FOLDER = "documents"
 
+# ✅ البحث داخل PDF مع التمييز
 def search_pdf(path, keyword):
     results = []
     try:
@@ -21,12 +22,16 @@ def search_pdf(path, keyword):
                 for line in lines:
                     if keyword.lower() in line.lower():
                         results.append((page_num, line.strip()))
-        doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
+        try:
+            doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
+        except Exception as save_err:
+            print(f"[!] Warning: Could not save highlights to '{path}': {save_err}")
         doc.close()
     except Exception as e:
         print(f"[!] Error reading {path}: {e}")
     return results
 
+# ✅ التمييز داخل DOCX
 def highlight_word_in_docx(paragraph, keyword):
     text = paragraph.text
     paragraph.clear()
@@ -51,14 +56,13 @@ def search_docx(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
+# ✅ البحث العام
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
         full_path = os.path.join(DOCS_FOLDER, filename)
-        if not os.path.isfile(full_path):
-            continue
-
         matches = []
+
         if filename.lower().endswith(".pdf"):
             matches = search_pdf(full_path, keyword)
             if matches:
