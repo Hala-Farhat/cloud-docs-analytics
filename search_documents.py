@@ -4,7 +4,7 @@ import docx
 
 DOCS_FOLDER = "documents"
 
-# ✅ تمييز الكلمة داخل PDF
+# ✅ تمييز الكلمات داخل PDF
 def search_pdf(path, keyword):
     results = []
     try:
@@ -12,16 +12,18 @@ def search_pdf(path, keyword):
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text()
             if keyword.lower() in text.lower():
-                highlights = page.search_for(keyword, quads=True)
-                for inst in highlights:
+                # تمييز كل التطابقات
+                found_instances = page.search_for(keyword, hit_max=1000)
+                for inst in found_instances:
                     try:
-                        page.add_highlight_annot(inst.rect)
+                        page.add_highlight_annot(inst)
                     except Exception:
                         continue
-                lines = text.split('\n')
-                for line in lines:
+                # استخراج الأسطر التي تحتوي على الكلمة
+                for line in text.split('\n'):
                     if keyword.lower() in line.lower():
                         results.append((page_num, line.strip()))
+        # حفظ الملف مع التمييز
         try:
             doc.save(path, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
         except Exception as save_err:
@@ -31,15 +33,16 @@ def search_pdf(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ تمييز الكلمة داخل DOCX
+# ✅ تمييز الكلمة داخل DOCX فقرة واحدة
 def highlight_word_in_docx(paragraph, keyword):
-    text = paragraph.text
+    words = paragraph.text.split()
     paragraph.clear()
-    for word in text.split():
+    for word in words:
         run = paragraph.add_run(word + " ")
         if keyword.lower() in word.lower():
             run.font.highlight_color = 7  # Yellow
 
+# ✅ البحث داخل ملفات DOCX
 def search_docx(path, keyword):
     results = []
     try:
@@ -56,7 +59,7 @@ def search_docx(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ استدعاء من main.py
+# ✅ بحث شامل في جميع الملفات داخل المجلد
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
