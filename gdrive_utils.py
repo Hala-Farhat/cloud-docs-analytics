@@ -5,7 +5,6 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
-# إعداد الاتصال عبر Google Drive API باستخدام streamlit secrets
 SCOPES = ['https://www.googleapis.com/auth/drive']
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gdrive"], scopes=SCOPES
@@ -41,7 +40,7 @@ def upload_to_drive(file_path, folder_id):
     query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
     response = drive_service.files().list(q=query, spaces='drive', fields='files(id)').execute()
     if response.get('files'):
-        return f"⚠️ File already exists in Drive: {file_name}"
+        return f" File already exists in Drive: {file_name}"
 
     file_metadata = {
         'name': file_name,
