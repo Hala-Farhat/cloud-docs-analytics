@@ -1,16 +1,14 @@
 import os
 import io
-import streamlit as st
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+import streamlit as st
 
-# إعداد الاتصال عبر Google Drive API باستخدام streamlit secrets
 SCOPES = ['https://www.googleapis.com/auth/drive']
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gdrive"], scopes=SCOPES
 )
-
 drive_service = build('drive', 'v3', credentials=credentials)
 
 def download_from_drive(folder_id, local_folder='documents'):
@@ -21,11 +19,14 @@ def download_from_drive(folder_id, local_folder='documents'):
     results = drive_service.files().list(q=query, fields="files(id, name)").execute()
     files = results.get('files', [])
 
+    file_ids = {}
+
     for file in files:
         file_id = file['id']
         file_name = file['name']
-        local_path = os.path.join(local_folder, file_name)
+        file_ids[file_name] = file_id
 
+        local_path = os.path.join(local_folder, file_name)
         if not os.path.exists(local_path):
             request = drive_service.files().get_media(fileId=file_id)
             fh = io.FileIO(local_path, 'wb')
@@ -34,16 +35,17 @@ def download_from_drive(folder_id, local_folder='documents'):
             while not done:
                 status, done = downloader.next_chunk()
 
+    return file_ids
+
 def upload_to_drive(file_path, folder_id):
     file_name = os.path.basename(file_path)
 
-    # Check if file already exists in the folder
+    # Check if file already exists
     query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
     response = drive_service.files().list(q=query, spaces='drive', fields='files(id)').execute()
-    existing_files = response.get('files')
-    if existing_files:
-        file_id = existing_files[0]['id']
-        return f"⚠️ File already exists in Drive: {file_name}", file_id
+    if response.get('files'):
+        existing_id = response['files'][0]['id']
+        return f"⚠️ File already exists in Drive: {file_name}", existing_id
 
     file_metadata = {
         'name': file_name,
@@ -56,4 +58,4 @@ def upload_to_drive(file_path, folder_id):
         fields='id'
     ).execute()
 
-    return f"✅ Uploaded to Drive: {file_name}", uploaded_file.get('id')
+    return f"✅ Uploaded to Drive: {file_name}", uploaded_file.get("id")
