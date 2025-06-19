@@ -14,7 +14,7 @@ FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# تحميل الملفات من Google Drive
+
 download_from_drive(FOLDER_ID)
 
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
@@ -22,7 +22,7 @@ st.title("📂 Cloud Document Analyzer")
 st.success("✅ Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
-# رفع الملفات
+
 st.sidebar.header("📤 Upload Document")
 uploaded_file = st.sidebar.file_uploader("Choose a file (.pdf or .docx)", type=["pdf", "docx"])
 if uploaded_file is not None:
@@ -33,13 +33,13 @@ if uploaded_file is not None:
     upload_message = upload_to_drive(save_path, FOLDER_ID)
     st.sidebar.info(upload_message)
 
-# اختيار العملية
+
 option = st.selectbox(
     "Choose a function to perform:",
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# عرض محتوى DOCX مع تمييز الكلمات
+
 
 def show_docx_highlighted(file_path, keyword):
     try:
@@ -56,7 +56,7 @@ def show_docx_highlighted(file_path, keyword):
     except Exception as e:
         st.error(f"⚠️ Error displaying Word file: {e}")
 
-# زر لتحميل ملفات PDF و DOCX
+
 
 def download_file(file_path):
     with open(file_path, "rb") as f:
@@ -70,7 +70,7 @@ def download_file(file_path):
         mime=mime
     )
 
-# وظائف التطبيق
+
 if option == "Search Documents":
     st.subheader("🔍 Search Documents")
     keyword = st.text_input("Enter keyword to search:")
