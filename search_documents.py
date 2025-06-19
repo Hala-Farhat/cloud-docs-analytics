@@ -1,10 +1,9 @@
 import os
-import fitz  # PyMuPDF
+import fitz  
 import docx
 
 DOCS_FOLDER = "documents"
 
-# ✅ البحث داخل PDF مع التمييز
 def search_pdf(path, keyword):
     results = []
     try:
@@ -31,7 +30,7 @@ def search_pdf(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ التمييز داخل DOCX
+
 def highlight_word_in_docx(paragraph, keyword):
     text = paragraph.text
     paragraph.clear()
@@ -56,7 +55,7 @@ def search_docx(path, keyword):
         print(f"[!] Error reading {path}: {e}")
     return results
 
-# ✅ البحث العام
+
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
