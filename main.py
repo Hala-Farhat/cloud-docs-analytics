@@ -10,6 +10,7 @@ from classify_documents import classify_documents
 from stats_report import generate_stats_report
 from gdrive_utils import download_from_drive, upload_to_drive
 
+# إعدادات المسارات
 FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
@@ -17,14 +18,16 @@ os.makedirs(DOCS_FOLDER, exist_ok=True)
 # تحميل الملفات من Google Drive
 download_from_drive(FOLDER_ID)
 
+# إعداد Streamlit
 st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
 st.title("📂 Cloud Document Analyzer")
 st.success("✅ Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
-# رفع الملفات
+# واجهة رفع الملفات
 st.sidebar.header("📤 Upload Document")
 uploaded_file = st.sidebar.file_uploader("Choose a file (.pdf or .docx)", type=["pdf", "docx"])
+
 if uploaded_file is not None:
     save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
     with open(save_path, "wb") as f:
@@ -33,14 +36,13 @@ if uploaded_file is not None:
     upload_message = upload_to_drive(save_path, FOLDER_ID)
     st.sidebar.info(upload_message)
 
-# اختيار العملية
+# اختيار الوظيفة
 option = st.selectbox(
     "Choose a function to perform:",
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
 
-# عرض PDF داخل الصفحة
-
+# 🔍 عرض PDF داخل الصفحة
 def show_pdf(file_path):
     try:
         with open(file_path, "rb") as f:
@@ -53,8 +55,7 @@ def show_pdf(file_path):
         st.error(f"⚠️ Could not display PDF: {e}")
         st.info("You can open this file manually from the Drive folder.")
 
-# عرض محتوى DOCX مع تمييز الكلمات
-
+# 🔍 عرض محتوى DOCX مع تمييز الكلمات
 def show_docx_highlighted(file_path, keyword):
     try:
         doc = docx.Document(file_path)
@@ -70,8 +71,7 @@ def show_docx_highlighted(file_path, keyword):
     except Exception as e:
         st.error(f"⚠️ Error displaying Word file: {e}")
 
-# زر لتحميل ملفات DOCX فقط
-
+# ⬇️ زر لتحميل ملفات DOCX فقط
 def download_docx(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -82,7 +82,7 @@ def download_docx(file_path):
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-# وظائف التطبيق
+# تنفيذ الوظائف
 if option == "Search Documents":
     st.subheader("🔍 Search Documents")
     keyword = st.text_input("Enter keyword to search:")
@@ -93,8 +93,9 @@ if option == "Search Documents":
         st.session_state["search_keyword"] = keyword
 
     if "search_results" in st.session_state and st.session_state["search_results"]:
-        keyword = st.session_state.get("search_keyword", "")
+        keyword = st.session_state["search_keyword"]
         results = st.session_state["search_results"]
+
         for doc_name, lines in results.items():
             st.markdown(f"### 📄 {doc_name}")
             for line in lines:
@@ -131,4 +132,4 @@ elif option == "Generate Statistics":
     if st.button("Show Stats"):
         stats = generate_stats_report()
         for line in stats:
-            st.write(line)  
+            st.write(line)
