@@ -14,32 +14,70 @@ FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-
+# تحميل الملفات من Google Drive
 download_from_drive(FOLDER_ID)
 
-st.set_page_config(page_title="Cloud Document Analyzer", layout="centered")
-st.title("📂 Cloud Document Analyzer")
-st.success("✅ Application is running successfully!")
+# تحسين الواجهة باستخدام CSS مخصص
+custom_css = """
+<style>
+    .main {
+        background-color: #f7f9fb;
+        padding: 2rem;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    h1, h2, h3 {
+        color: #2c3e50;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 0.5rem;
+    }
+    .stButton>button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #2980b9;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 8px;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+    }
+    .stDownloadButton>button {
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+
+st.set_page_config(page_title="Cloud Document Analyzer Platform", layout="centered")
+st.title("Cloud Document Analyzer Platform")
+st.success("Application is running successfully!")
 st.info("Select a function from below and click the button to run it.")
 
-
-st.sidebar.header("📤 Upload Document")
+st.sidebar.header("Upload Document")
 uploaded_file = st.sidebar.file_uploader("Choose a file (.pdf or .docx)", type=["pdf", "docx"])
 if uploaded_file is not None:
     save_path = os.path.join(DOCS_FOLDER, uploaded_file.name)
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.sidebar.success(f"✅ File '{uploaded_file.name}' saved successfully.")
+    st.sidebar.success(f"File '{uploaded_file.name}' saved successfully.")
     upload_message = upload_to_drive(save_path, FOLDER_ID)
     st.sidebar.info(upload_message)
-
 
 option = st.selectbox(
     "Choose a function to perform:",
     ("-- Select --", "Sort Documents", "Search Documents", "Classify Documents", "Generate Statistics")
 )
-
-
 
 def show_docx_highlighted(file_path, keyword):
     try:
@@ -54,9 +92,7 @@ def show_docx_highlighted(file_path, keyword):
                 else:
                     st.markdown(text)
     except Exception as e:
-        st.error(f"⚠️ Error displaying Word file: {e}")
-
-
+        st.error(f"Error displaying Word file: {e}")
 
 def download_file(file_path):
     with open(file_path, "rb") as f:
@@ -64,15 +100,14 @@ def download_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
     mime = "application/pdf" if ext == ".pdf" else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     st.download_button(
-        label=f"⬇️ Download {ext.upper().replace('.', '')}",
+        label=f"Download {ext.upper().replace('.', '')}",
         data=base64.b64decode(b64),
         file_name=os.path.basename(file_path),
         mime=mime
     )
 
-
 if option == "Search Documents":
-    st.subheader("🔍 Search Documents")
+    st.subheader("Search Documents")
     keyword = st.text_input("Enter keyword to search:")
 
     if st.button("Search"):
@@ -84,13 +119,13 @@ if option == "Search Documents":
         keyword = st.session_state.get("search_keyword", "")
         results = st.session_state["search_results"]
         for doc_name, lines in results.items():
-            st.markdown(f"### 📄 {doc_name}")
+            st.markdown(f"### {doc_name}")
             for line in lines:
                 highlighted = line.replace(keyword, f"<mark>{keyword}</mark>")
                 st.markdown(f"• {highlighted}", unsafe_allow_html=True)
 
             full_path = os.path.join(DOCS_FOLDER, doc_name)
-            with st.expander(f"👁️ View {doc_name}"):
+            with st.expander(f"View {doc_name}"):
                 if doc_name.lower().endswith(".docx"):
                     show_docx_highlighted(full_path, keyword)
                     download_file(full_path)
@@ -102,21 +137,21 @@ if option == "Search Documents":
         st.warning("No results found.")
 
 elif option == "Sort Documents":
-    st.subheader("📑 Sorted Document Titles")
+    st.subheader("Sorted Document Titles")
     if st.button("Run Sorting"):
         result = sort_documents()
         for title, fname in result:
-            st.write(f"📄 **{fname}** → {title}")
+            st.write(f"{fname} → {title}")
 
 elif option == "Classify Documents":
-    st.subheader("🧠 Document Classification")
+    st.subheader("Document Classification")
     if st.button("Run Classification"):
         result = classify_documents()
         for file, category in result.items():
-            st.write(f"📄 **{file}** → {category}")
+            st.write(f"{file} → {category}")
 
 elif option == "Generate Statistics":
-    st.subheader("📊 Project Statistics")
+    st.subheader("Project Statistics")
     if st.button("Show Stats"):
         stats = generate_stats_report()
         for line in stats:
