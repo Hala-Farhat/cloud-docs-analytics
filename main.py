@@ -56,8 +56,10 @@ def show_docx(file_path):
     import docx
     try:
         doc = docx.Document(file_path)
+        st.markdown("---")
         for para in doc.paragraphs:
-            st.markdown(para.text)
+            if para.text.strip():
+                st.markdown(para.text)
     except Exception as e:
         st.error(f"⚠️ Error displaying Word file: {e}")
 
