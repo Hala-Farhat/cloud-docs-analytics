@@ -1,61 +1,36 @@
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 import os
-import io
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
-import streamlit as st
 
-SCOPES = ['https://www.googleapis.com/auth/drive']
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gdrive"], scopes=SCOPES
-)
-drive_service = build('drive', 'v3', credentials=credentials)
+# ✅ مصادقة Google Drive مع حفظ الاعتماد
+def authenticate_drive():
+    gauth = GoogleAuth()
+    gauth.LoadCredentialsFile("credentials.json")
 
-def download_from_drive(folder_id, local_folder='documents'):
-    if not os.path.exists(local_folder):
-        os.makedirs(local_folder)
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth()
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+    else:
+        gauth.Authorize()
 
-    query = f"'{folder_id}' in parents and trashed=false"
-    results = drive_service.files().list(q=query, fields="files(id, name)").execute()
-    files = results.get('files', [])
+    gauth.SaveCredentialsFile("credentials.json")
+    return GoogleDrive(gauth)
 
-    file_ids = {}
-
-    for file in files:
-        file_id = file['id']
-        file_name = file['name']
-        file_ids[file_name] = file_id
-
-        local_path = os.path.join(local_folder, file_name)
-        if not os.path.exists(local_path):
-            request = drive_service.files().get_media(fileId=file_id)
-            fh = io.FileIO(local_path, 'wb')
-            downloader = MediaIoBaseDownload(fh, request)
-            done = False
-            while not done:
-                status, done = downloader.next_chunk()
-
-    return file_ids
-
+# ✅ رفع ملف إلى مجلد محدد في Google Drive
 def upload_to_drive(file_path, folder_id):
+    drive = authenticate_drive()
     file_name = os.path.basename(file_path)
 
-    # Check if file already exists
-    query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
-    response = drive_service.files().list(q=query, spaces='drive', fields='files(id)').execute()
-    if response.get('files'):
-        existing_id = response['files'][0]['id']
-        return f"⚠️ File already exists in Drive: {file_name}", existing_id
+    # التأكد من عدم وجود الملف مسبقًا (لتجنب التكرار)
+    existing = drive.ListFile({
+        'q': f"title='{file_name}' and '{folder_id}' in parents and trashed=false"
+    }).GetList()
 
-    file_metadata = {
-        'name': file_name,
-        'parents': [folder_id]
-    }
-    media = MediaFileUpload(file_path, resumable=True)
-    uploaded_file = drive_service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id'
-    ).execute()
+    if existing:
+        return f"⚠️ File already exists in Drive: {file_name}"
 
-    return f"✅ Uploaded to Drive: {file_name}", uploaded_file.get("id")
+    file_drive = drive.CreateFile({'title': file_name, 'parents': [{'id': folder_id}]})
+    file_drive.SetContentFile(file_path)
+    file_drive.Upload()
+    return f"✅ Uploaded to Drive: {file_name}"    
