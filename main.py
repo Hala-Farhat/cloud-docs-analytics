@@ -14,10 +14,9 @@ FOLDER_ID = "1S0d8FCFxDRih4KDBsKuUO8G_Q2d3gRr5"
 DOCS_FOLDER = "documents"
 os.makedirs(DOCS_FOLDER, exist_ok=True)
 
-# تحميل الملفات من Google Drive
 download_from_drive(FOLDER_ID)
 
-# تحسين الواجهة باستخدام CSS مخصص
+
 custom_css = """
 <style>
     .main {
