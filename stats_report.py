@@ -76,7 +76,7 @@ def generate_stats_report():
     classify_time = simulate_classification(docs)
 
     return [
-        "📊 Project Statistics:",
+        "Project Statistics:",
         f"- Total number of documents: {file_count}",
         f"- Total size: {total_size:.2f} KB",
         f"- Time to sort documents: {sort_time:.2f} sec",
