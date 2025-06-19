@@ -12,10 +12,10 @@ def search_pdf(path, keyword):
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text()
             if keyword.lower() in text.lower():
-                highlights = page.search_for(keyword)
+                highlights = page.search_for(keyword, quads=True)
                 for inst in highlights:
                     try:
-                        page.add_highlight_annot(inst)
+                        page.add_highlight_annot(inst.rect)
                     except Exception:
                         continue
                 lines = text.split('\n')
@@ -33,12 +33,14 @@ def search_pdf(path, keyword):
 
 # ✅ التمييز داخل DOCX
 def highlight_word_in_docx(paragraph, keyword):
+    from docx.oxml.ns import qn
     text = paragraph.text
     paragraph.clear()
+
     for word in text.split():
         run = paragraph.add_run(word + " ")
         if keyword.lower() in word.lower():
-            run.font.highlight_color = 7  # Yellow (WD_COLOR_INDEX.YELLOW)
+            run.font.highlight_color = 7  # Yellow (docx.enum.text.WD_COLOR_INDEX.YELLOW)
 
 def search_docx(path, keyword):
     results = []
@@ -53,14 +55,15 @@ def search_docx(path, keyword):
         if changed:
             doc.save(path)
     except Exception as e:
-        print(f"[!] Error reading Word file {path}: {e}")
+        print(f"[!] Error reading DOCX {path}: {e}")
     return results
 
-# ✅ البحث العام في جميع الملفات
+# ✅ البحث العام في المستندات
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
         full_path = os.path.join(DOCS_FOLDER, filename)
+        matches = []
 
         if filename.lower().endswith(".pdf"):
             matches = search_pdf(full_path, keyword)
