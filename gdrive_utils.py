@@ -1,4 +1,3 @@
-
 import os
 import io
 import streamlit as st
@@ -41,8 +40,10 @@ def upload_to_drive(file_path, folder_id):
     # Check if file already exists in the folder
     query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
     response = drive_service.files().list(q=query, spaces='drive', fields='files(id)').execute()
-    if response.get('files'):
-        return f"⚠️ File already exists in Drive: {file_name}"
+    existing_files = response.get('files')
+    if existing_files:
+        file_id = existing_files[0]['id']
+        return f"⚠️ File already exists in Drive: {file_name}", file_id
 
     file_metadata = {
         'name': file_name,
@@ -55,4 +56,4 @@ def upload_to_drive(file_path, folder_id):
         fields='id'
     ).execute()
 
-    return f"✅ Uploaded to Drive: {file_name}"
+    return f"✅ Uploaded to Drive: {file_name}", uploaded_file.get('id')
