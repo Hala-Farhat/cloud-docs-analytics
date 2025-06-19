@@ -28,17 +28,19 @@ def search_pdf(path, keyword):
             print(f"[!] Warning: Could not save highlights to '{path}': {save_err}")
         doc.close()
     except Exception as e:
-        print(f"[!] Error reading {path}: {e}")
+        print(f"[!] Error reading PDF {path}: {e}")
     return results
 
 # ✅ التمييز داخل DOCX
 def highlight_word_in_docx(paragraph, keyword):
+    from docx.oxml.ns import qn
     text = paragraph.text
     paragraph.clear()
+
     for word in text.split():
         run = paragraph.add_run(word + " ")
         if keyword.lower() in word.lower():
-            run.font.highlight_color = 7  # Yellow
+            run.font.highlight_color = 7  # Yellow (docx.enum.text.WD_COLOR_INDEX.YELLOW)
 
 def search_docx(path, keyword):
     results = []
@@ -53,10 +55,10 @@ def search_docx(path, keyword):
         if changed:
             doc.save(path)
     except Exception as e:
-        print(f"[!] Error reading {path}: {e}")
+        print(f"[!] Error reading DOCX {path}: {e}")
     return results
 
-# ✅ البحث العام
+# ✅ البحث العام في المستندات
 def search_documents(keyword):
     result_dict = {}
     for filename in os.listdir(DOCS_FOLDER):
